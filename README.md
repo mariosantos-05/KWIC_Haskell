@@ -59,6 +59,8 @@ quick brown fox The      (from "The quick brown fox")
 
 # Repositório mantido e gerenciado por:
 - [Átila Fernandes](https://github.com/At1l4)
+- [Caio Carvalho](https://github.com/cmpc29)
 - [Lucas Adeodato](https://github.com/HimeakLucas)
 - [Mario Santos](https://github.com/mariosantos-05)
+
 
