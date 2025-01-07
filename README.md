@@ -61,4 +61,5 @@ quick brown fox The      (from "The quick brown fox")
 - [Átila Fernandes](https://github.com/At1l4)
 - [Lucas Adeodato](https://github.com/HimeakLucas)
 - [Mario Santos](https://github.com/mariosantos-05)
+- [Caio Merçon](https://github.com/cmpc29)
 
