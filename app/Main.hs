@@ -13,9 +13,13 @@ kwic lines =
         filteredRotations = filter (\line -> not $ any (`isPrefixOf` line) stopWords) allRotations
     in sort filteredRotations
 
+reader:: FilePath -> IO [String]
+reader path = do
+    content <- readFile path
+    return (lines content)
 
 main :: IO ()
 main = do
-    let inputLines = ["The quick brown fox", "A brown cat sat","The cat is brown"]
+    inputLines <- reader "titles.txt"
     let kwicIndex = kwic inputLines
     mapM_ putStrLn kwicIndex
