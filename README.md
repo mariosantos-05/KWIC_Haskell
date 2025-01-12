@@ -1,10 +1,23 @@
 # KWIC_Haskell
 This repository implement a KWIC (Key Word in context) on haskell using "The One" as the programming style
 
+---
+
+# Getting Started
+You can clone this repository using the following command:
+
+```bash
+git clone https://github.com/mariosantos-05/KWIC_Haskell.git
+```
+
+This project is based on Stack, so install Stack dependences and use the following commands:
+
+   - `stack build` – to build the project
+   - `stack run` – to run the program (it will generate the KWIC of the text inside the `input.txt` file)
+   - `stack test` – to run the unit tests
+---
 
 This algorithm takes a list of titles or phrases and generates an alphabetically sorted list of all keywords in these titles, along with their surrounding context. KWIC is a classic example of string manipulation and sorting, useful for building indexes and concordances.
-
----
 
 ## Input  
 A text file containing a list of titles or phrases, one per line.
