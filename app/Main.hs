@@ -1,21 +1,18 @@
-import Data.List (sort, tails, isPrefixOf)
+module Main (main) where
 
-rotations :: String -> [String]
-rotations line = 
-    let wordsList = words line
-    in [unwords (drop i wordsList ++ take i wordsList) | i <- [0..length wordsList - 1]]
-
-
-kwic :: [String] -> [String]
-kwic lines = 
-    let allRotations = concatMap rotations lines
-        stopWords = ["a", "the", "is", "of", "A", "The", "Is", "Of"]
-        filteredRotations = filter (\line -> not $ any (`isPrefixOf` line) stopWords) allRotations
-    in sort filteredRotations
-
+import KWIC (generateKWIC)
 
 main :: IO ()
 main = do
-    let inputLines = ["The quick brown fox", "A brown cat sat","The cat is brown"]
-    let kwicIndex = kwic inputLines
-    mapM_ putStrLn kwicIndex
+    -- Read input from input.text
+    content <- readFile "input.txt"
+    let titles = lines content
+    let kwic = generateKWIC titles
+
+    -- Format KWIC output as strings
+    let formattedOutput = unlines $ map (\(kw, ctx) -> kw ++ " -> " ++ ctx) kwic
+
+    -- Write output to output.txt
+    writeFile "output.txt" formattedOutput
+
+    putStrLn "KWIC has been written into output.txt"
