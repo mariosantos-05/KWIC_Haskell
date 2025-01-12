@@ -1,56 +1,56 @@
-module KWIC (generateKWIC) where
+module KWIC (
+    generateCircularShifts,
+    sortShifts,
+    removeStopWords,
+    splitWords,
+    formatOutput,
+    readFileContent,
+    TheOne(..)
+) where
 
-import Data.Char (toLower)
 import Data.List (sort)
+import Data.Char (toLower, isAlpha)
+import qualified Data.Set as Set
 
--- Monad to wrap values
-newtype Identity a = Identity { runIdentity :: a }
+-- Definição da abstração TheOne
+newtype TheOne a = TheOne { unwrap :: a }
 
--- Functor instance for Identity
-instance Functor Identity where
-    fmap f (Identity x) = Identity (f x)
+instance Functor TheOne where
+  fmap f (TheOne x) = TheOne (f x)
 
--- Applicative instance for Identity
-instance Applicative Identity where
-    pure = Identity
-    (Identity f) <*> (Identity x) = Identity (f x)
+instance Applicative TheOne where
+  pure = TheOne
+  (TheOne f) <*> (TheOne x) = TheOne (f x)
 
--- Monad instance for Identity
-instance Monad Identity where
-    (Identity x) >>= f = f x
+instance Monad TheOne where
+  return = pure
+  (TheOne x) >>= f = f x
 
--- Stop words list
-stopWords :: [String]
-stopWords = ["a", "o", "as", "os", "um", "uma", "é", "de", "em", "que", "para", "com", "the", "is", "of", "The"]
+-- Funções auxiliares
+readFileContent :: FilePath -> IO (TheOne String)
+readFileContent path = fmap TheOne (readFile path)
 
--- Everything into a single uniform monadic operation
-generateKWIC :: [String] -> [(String, String)]
-generateKWIC titles = concatMap processTitle titles
-    where
-        -- Process each title using the Identity monad
-        processTitle :: String -> [(String, String)]
-        processTitle title = 
-            let titleWords = words title
-            in runIdentity (filterStopWords titleWords >>= sortWords >>= generateShifts titleWords)
+splitWords :: String -> [String]
+splitWords = words . map (\c -> if isAlpha c || c == ' ' then c else ' ')
 
-        -- Filter stop words from both ends of the title
-        filterStopWords :: [String] -> Identity [String]
-        filterStopWords wordsList = return (removeStopWordsFromEnds (filter (\word -> not (map toLower word `elem` stopWords)) wordsList))
+removeStopWords :: [String] -> [String]
+removeStopWords wordsList =
+  let stopWords = Set.fromList ["a", "o", "as", "os", "um", "uma", "é", "de", "e", "da", "do", "The", "and", "an", "or", "is", "but", "so", "yet", "to", "nor", "on", "the"]
+  in filter (\word -> not (map toLower word `Set.member` stopWords)) wordsList
 
-        -- Remove stop words from both ends of the list
-        removeStopWordsFromEnds :: [String] -> [String]
-        removeStopWordsFromEnds = reverse . dropWhile (`elem` stopWords) . reverse . dropWhile (`elem` stopWords)
+generateCircularShifts :: [String] -> [(String, String)]
+generateCircularShifts titles = 
+  [ (unwords shifted, title) 
+  | title <- titles
+  , let wordsInTitle = splitWords title
+  , let validWords = removeStopWords wordsInTitle
+  , word <- validWords
+  , let (before, after) = break (== word) wordsInTitle
+  , let shifted = after ++ before
+  ]
 
-        -- Sort the filtered words
-        sortWords :: [String] -> Identity [String]
-        sortWords wordsList = return (sort wordsList)
+sortShifts :: [(String, String)] -> [(String, String)]
+sortShifts = sort
 
-        -- Generate circular shifts for each word in the filtered and sorted list
-        generateShifts :: [String] -> [String] -> Identity [(String, String)]
-        generateShifts title wordsList = 
-            return (map (\kw -> (kw, circularShift title kw)) wordsList)
-
-        -- Circular shift operation
-        circularShift :: [String] -> String -> String
-        circularShift title keyword = unwords (take len (dropWhile (/= keyword) title) ++ takeWhile (/= keyword) title)
-            where len = length title
+formatOutput :: [(String, String)] -> String
+formatOutput = unlines . map (\(shifted, original) -> shifted ++ " (from \"" ++ original ++ "\")")

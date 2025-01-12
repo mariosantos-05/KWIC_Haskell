@@ -1,54 +1,68 @@
 import Test.Hspec
-import KWIC (generateKWIC)
+import KWIC (splitWords, removeStopWords, generateCircularShifts, sortShifts, formatOutput)
 
 main :: IO ()
 main = hspec $ do
-    describe "generateKWIC" $ do
+  describe "splitWords" $ do
+    it "should split 'The quick, brown fox!' into ['The', 'quick', 'brown', 'fox']" $ do
+      splitWords "The quick, brown fox!" `shouldBe` ["The", "quick", "brown", "fox"]
+    it "should split 'Hello, world!' into ['Hello', 'world']" $ do
+      splitWords "Hello, world!" `shouldBe` ["Hello", "world"]
+    it "should handle an empty string" $ do
+      splitWords "" `shouldBe` []
+    it "should handle a string with only punctuation" $ do
+      splitWords "!!!" `shouldBe` []
 
-        it "handles multiple titles" $ do
-            let input = ["The quick brown fox", "jumps over the lazy dog"]
-            let expected = [ ("brown", "brown fox The quick")
-                            , ("fox", "fox The quick brown")
-                            , ("quick", "quick brown fox The")
-                            , ("dog", "dog jumps over the lazy")
-                            , ("jumps", "jumps over the lazy dog")
-                            , ("lazy", "lazy dog jumps over the")
-                            , ("over", "over the lazy dog jumps")
-                            ]
-            generateKWIC input `shouldBe` expected
+  describe "removeStopWords" $ do
+    it "should remove 'The' from ['The', 'quick', 'brown', 'fox']" $ do
+      removeStopWords ["The", "quick", "brown", "fox"] `shouldBe` ["quick", "brown", "fox"]
+    it "should remove 'a' and 'the' from ['a', 'cat', 'is', 'on', 'the', 'roof']" $ do
+      removeStopWords ["a", "cat", "is", "on", "the", "roof"] `shouldBe` ["cat", "roof"]
+    it "should handle an empty list" $ do
+      removeStopWords [] `shouldBe` []
 
-        it "ignores stop words in titles" $ do
-            let input = ["The quick brown fox is jumping over the lazy dog"]
-            let expected = [ ("brown", "brown fox is jumping over the lazy dog The quick")
-                            , ("dog", "dog The quick brown fox is jumping over the lazy")
-                            , ("fox", "fox is jumping over the lazy dog The quick brown")
-                            , ("jumping", "jumping over the lazy dog The quick brown fox is")
-                            , ("lazy", "lazy dog The quick brown fox is jumping over the")
-                            , ("over", "over the lazy dog The quick brown fox is jumping")
-                            , ("quick", "quick brown fox is jumping over the lazy dog The")
-                            ]
-            generateKWIC input `shouldBe` expected
+  describe "generateCircularShifts" $ do
+    it "should generate circular shifts for 'The quick brown fox'" $ do
+      generateCircularShifts ["The quick brown fox"] `shouldBe`
+        [("quick brown fox The", "The quick brown fox"),
+         ("brown fox The quick", "The quick brown fox"),
+         ("fox The quick brown", "The quick brown fox")]
+    it "should generate circular shifts for a single word" $ do
+      generateCircularShifts ["hello"] `shouldBe` [("hello", "hello")]
+    it "should handle an empty list" $ do
+      generateCircularShifts [] `shouldBe` []
 
-        it "returns empty result for empty input" $ do
-            generateKWIC [] `shouldBe` []
+  describe "sortShifts" $ do
+    it "should sort the circular shifts correctly" $ do
+      let shifts = [("brown fox The quick", "The quick brown fox"),
+                    ("fox The quick brown", "The quick brown fox"),
+                    ("quick brown fox The", "The quick brown fox")]
+      sortShifts shifts `shouldBe`
+        [("brown fox The quick", "The quick brown fox"),
+         ("fox The quick brown", "The quick brown fox"),
+         ("quick brown fox The", "The quick brown fox")]
+    it "should handle an already sorted list" $ do
+      let shifts = [("brown fox The quick", "The quick brown fox"),
+                    ("fox The quick brown", "The quick brown fox")]
+      sortShifts shifts `shouldBe`
+        [("brown fox The quick", "The quick brown fox"),
+         ("fox The quick brown", "The quick brown fox")]
+    it "should handle an empty list" $ do
+      sortShifts [] `shouldBe` []
 
-        it "returns empty result for title with only stop words" $ do
-            let input = ["the is of a"]
-            generateKWIC input `shouldBe` []
-
-        it "returns correct result for title with only one word" $ do
-            let input = ["jumping"]
-            let expected = [("jumping", "jumping")]
-            generateKWIC input `shouldBe` expected
-
-        it "handles case insensitivity of stop words" $ do
-            let input = ["A quick brown fox jumps over The lazy dog"]
-            let expected = [ ("brown", "brown fox jumps over The lazy dog A quick")
-                            , ("dog", "dog A quick brown fox jumps over The lazy")
-                            , ("fox", "fox jumps over The lazy dog A quick brown")
-                            , ("jumps", "jumps over The lazy dog A quick brown fox")
-                            , ("lazy", "lazy dog A quick brown fox jumps over The")
-                            , ("over", "over The lazy dog A quick brown fox jumps")
-                            , ("quick", "quick brown fox jumps over The lazy dog A")
-                            ]
-            generateKWIC input `shouldBe` expected
+  describe "formatOutput" $ do
+    it "should format the circular shifts correctly" $ do
+      let formattedShifts = [("brown fox The quick", "The quick brown fox"),
+                             ("quick brown fox The", "The quick brown fox")]
+      formatOutput formattedShifts `shouldBe`
+        "brown fox The quick (from \"The quick brown fox\")\nquick brown fox The (from \"The quick brown fox\")\n"
+    it "should handle an empty list of shifts" $ do
+      formatOutput [] `shouldBe` ""
+    it "should format a single shift correctly" $ do
+      let formattedShifts = [("quick brown fox The", "The quick brown fox")]
+      formatOutput formattedShifts `shouldBe`
+        "quick brown fox The (from \"The quick brown fox\")\n"
+    it "should handle large inputs correctly" $ do
+      let largeShifts = [(replicate 100 'a', "a"), (replicate 100 'b', "b")]
+      formatOutput largeShifts `shouldBe`
+        replicate 100 'a' ++ " (from \"a\")\n" ++ replicate 100 'b' ++ " (from \"b\")\n"

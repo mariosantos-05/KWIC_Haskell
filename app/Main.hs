@@ -1,18 +1,32 @@
-module Main (main) where
-
-import KWIC (generateKWIC)
+import KWIC (splitWords, removeStopWords, generateCircularShifts, sortShifts, formatOutput)
+import System.Environment (getArgs)
+import Control.Monad (when)
 
 main :: IO ()
 main = do
-    -- Read input from input.text
-    content <- readFile "input.txt"
-    let titles = lines content
-    let kwic = generateKWIC titles
+  -- Obter os argumentos passados para o programa
+  args <- getArgs
+  
+  -- Verificar se o usuário forneceu um caminho para o arquivo
+  when (null args) $ do
+    putStrLn "Por favor, forneça o caminho para o arquivo de texto como argumento."
+    return ()
+  
+  -- Ler o arquivo de texto fornecido
+  let filePath = head args
+  content <- readFile filePath
 
-    -- Format KWIC output as strings
-    let formattedOutput = unlines $ map (\(kw, ctx) -> kw ++ " -> " ++ ctx) kwic
+  -- Dividir o conteúdo do arquivo em linhas
+  let linesInContent = lines content
+  
+  -- Processar o título para gerar shifts circulares
+  let shifts = generateCircularShifts linesInContent
 
-    -- Write output to output.txt
-    writeFile "output.txt" formattedOutput
-
-    putStrLn "KWIC has been written into output.txt"
+  -- Ordenar os shifts
+  let sortedShifts = sortShifts shifts
+  
+  -- Formatar a saída
+  let formattedOutput = formatOutput sortedShifts
+  
+  -- Exibir o resultado formatado
+  putStrLn formattedOutput
