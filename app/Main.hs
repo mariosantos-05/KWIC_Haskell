@@ -1,32 +1,26 @@
-import KWIC (splitWords, removeStopWords, generateCircularShifts, sortShifts, formatOutput)
+module Main (main) where
+
+
+import KWIC (generateCircularShifts, sortShifts, formatOutput, readFileContent, TheOne(..), unwrap)
+
 import System.Environment (getArgs)
-import Control.Monad (when)
+import Safe (headMay)
 
 main :: IO ()
 main = do
-  -- Obter os argumentos passados para o programa
-  args <- getArgs
-  
-  -- Verificar se o usuário forneceu um caminho para o arquivo
-  when (null args) $ do
-    putStrLn "Por favor, forneça o caminho para o arquivo de texto como argumento."
-    return ()
-  
-  -- Ler o arquivo de texto fornecido
-  let filePath = head args
-  content <- readFile filePath
+    -- Obtém os argumentos da linha de comando
+    args <- getArgs
 
-  -- Dividir o conteúdo do arquivo em linhas
-  let linesInContent = lines content
-  
-  -- Processar o título para gerar shifts circulares
-  let shifts = generateCircularShifts linesInContent
-
-  -- Ordenar os shifts
-  let sortedShifts = sortShifts shifts
-  
-  -- Formatar a saída
-  let formattedOutput = formatOutput sortedShifts
-  
-  -- Exibir o resultado formatado
-  putStrLn formattedOutput
+    -- Verifica se o nome do arquivo foi fornecido
+    case headMay args of
+        Nothing -> putStrLn "Por favor, forneça o caminho para o arquivo como argumento."
+        Just filePath -> do
+            -- Lê o conteúdo do arquivo
+            content <- readFileContent filePath
+            let linesContent = lines (unwrap content)  -- Convert string into list of lines
+            -- Gera as rotações circulares (agora passando as linhas)
+            let circularShifts = generateCircularShifts linesContent
+            -- Ordena as rotações
+            let sortedShifts = sortShifts circularShifts
+            -- Formata a saída e imprime
+            putStrLn (formatOutput sortedShifts)

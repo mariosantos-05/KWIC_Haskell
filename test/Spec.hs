@@ -6,10 +6,10 @@ main = hspec $ do
     describe "splitWords" $ do
         it "should split 'The quick, brown fox!' into ['The', 'quick', 'brown', 'fox']" $ do
             splitWords "The quick, brown fox!" `shouldBe`
-            ["The", "quick", "brown", "fox"]
+                ["The", "quick", "brown", "fox"]
         it "should split 'Hello, world!' into ['Hello', 'world']" $ do
             splitWords "Hello, world!" `shouldBe`
-            ["Hello", "world"]
+                ["Hello", "world"]
         it "should handle an empty string" $ do
             splitWords "" `shouldBe` []
         it "should handle a string with only punctuation" $ do
@@ -18,10 +18,10 @@ main = hspec $ do
     describe "removeStopWords" $ do
         it "should remove 'The' from ['The', 'quick', 'brown', 'fox']" $ do
             removeStopWords ["The", "quick", "brown", "fox"] `shouldBe`
-            ["quick", "brown", "fox"]
+                ["quick", "brown", "fox"]
         it "should remove 'a' and 'the' from ['a', 'cat', 'is', 'on', 'the', 'roof']" $ do
             removeStopWords ["a", "cat", "is", "on", "the", "roof"] `shouldBe` 
-            ["cat", "roof"]
+                ["cat", "roof"]
         it "should handle an empty list" $ do
             removeStopWords [] `shouldBe` []
 
@@ -35,7 +35,7 @@ main = hspec $ do
                 ]
         it "should generate circular shifts for a single word" $ do
             generateCircularShifts ["hello"] `shouldBe`
-            [("hello", "hello")]
+                [("hello", "hello")]
         it "should handle an empty list" $ do
             generateCircularShifts [] `shouldBe` []
 
